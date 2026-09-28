@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AutoGuard – Smart Vehicle Breakdown & Roadside Assistance</title>
+<style>
+:root{--navy:#0c1b33;--navy2:#14305a;--blue:#2563eb;--bg:#eef2f8;--text:#16233b;--mute:#5b6b85;--line:#dde4ef;--green:#15803d;--red:#dc2626;--amber:#b45309}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;flex:none;background:linear-gradient(180deg,var(--navy),var(--navy2));color:#cfd9ec;padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 8px 20px}
+.logo{width:40px;flex:none}
+.brand b{display:block;color:#fff;font-size:19px}
+.brand small{font-size:11px;color:#8fa3c7}
+#nav{display:flex;flex-direction:column;gap:4px;flex:1}
+#nav button{background:none;border:0;color:inherit;text-align:left;padding:11px 12px;border-radius:9px;font-size:15px;cursor:pointer;transition:.2s}
+#nav button:hover{background:#ffffff14}
+#nav button.active{background:var(--blue);color:#fff}
+main{flex:1;padding:24px 32px;max-width:1150px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:18px 22px;border-radius:14px;color:#fff;background:linear-gradient(120deg,var(--navy),#1e4a8c)}
+.top h1{font-size:26px}.top p{color:#b7c8e6;font-size:14px}
+.page{display:none}.page.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+h2{font-size:19px;margin-bottom:4px}h3{font-size:14px;color:var(--mute);font-weight:600;margin-bottom:8px}
+.ptitle{margin-bottom:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 2px 8px #0c1b3312}
+.grid4,.grid3,.grid5{display:grid;gap:14px;margin-bottom:18px}
+.grid4{grid-template-columns:repeat(4,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid5{grid-template-columns:repeat(5,1fr);margin:14px 0}
+.grid4 .card{margin:0}.card .grid4,.card .grid3{margin-bottom:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.big{font-size:20px;font-weight:700;margin-bottom:2px}
+.mute{color:var(--mute);font-size:14px;margin-bottom:10px}
+.stats .card{text-align:center;padding:14px}.stats b{font-size:28px;color:var(--blue);display:block}.stats span{font-size:13px;color:var(--mute)}
+.emg-card{background:#fff5f5;border-color:#f5c2c2}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:9px;padding:10px 16px;font-size:14px;cursor:pointer;transition:.2s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn:disabled{background:#9db0d0;cursor:not-allowed;transform:none}
+.btn.danger{background:var(--red)}.btn.ghost{background:#ffffff1a;font-size:13px}
+.big-btn{padding:12px 22px;font-size:15px}
+label{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600}
+input,select,textarea{font:inherit;font-weight:400;padding:10px;border:1px solid #c5d0e3;border-radius:8px;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid #2563eb55;border-color:var(--blue)}
+input[readonly]{background:#f2f5fa}
+.err{color:var(--red);font-size:12px;font-weight:400;min-height:0}
+.prob{border:2px solid var(--line);border-radius:12px;padding:16px 8px;text-align:center;background:#fff;cursor:pointer;font-size:14px;transition:.2s}
+.prob span{display:block;font-size:30px;margin-bottom:6px}
+.prob:hover{border-color:#93b4f5;transform:translateY(-2px)}
+.prob.sel{border-color:var(--blue);background:#eaf1ff;font-weight:600}
+.opt{display:flex;flex-direction:column;gap:6px}.opt .ico{font-size:32px}.opt p{font-size:14px;color:var(--mute)}.opt .btn{margin-top:auto}
+.tow{border-left:5px solid var(--blue)}.tow .btn{margin-top:14px}
+.result{margin-top:16px;padding:14px;border-radius:10px;background:#ecfdf3;border:1px solid #b7ebc8;line-height:1.7;font-size:14px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge.ok{background:#dcfce7;color:var(--green)}.badge.warn{background:#fef3c7;color:var(--amber)}.badge.info{background:#dbeafe;color:#1d4ed8}.badge.off{background:#e5e7eb;color:#4b5563}
+.prov h3{color:var(--text);font-size:15px;margin-bottom:4px}.prov{padding:14px;border:1px solid var(--line);border-radius:12px;font-size:13px;line-height:1.7}
+.vd{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.vd div{background:#f5f8fd;padding:12px;border-radius:10px}.vd small{display:block;color:var(--mute);font-size:12px}.vd b{font-size:16px}
+.steps{list-style:none;padding:0;margin:18px 0 6px}
+.steps li{display:flex;gap:14px;padding-bottom:26px;position:relative;color:var(--mute)}
+.steps li:not(:last-child)::before{content:"";position:absolute;left:10px;top:24px;bottom:2px;width:2px;background:var(--line)}
+.steps li.done:not(:last-child)::before{background:var(--blue)}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid #c5d0e3;background:#fff;flex:none}
+.done .dot{background:var(--blue);border-color:var(--blue)}
+.now .dot{animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #2563eb88}100%{box-shadow:0 0 0 10px #2563eb00}}
+.steps b{display:block;color:var(--text)}.now b{color:var(--blue)}.steps small{font-size:13px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 16px;margin:12px 0;font-size:14px}.info-grid small{display:block;color:var(--mute)}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}th{background:#f2f5fa;color:var(--mute);font-weight:600}
+.empty{text-align:center;padding:30px;color:var(--mute)}.empty span{font-size:36px;display:block}.empty .btn{margin-top:12px}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.chips span{background:#eaf1ff;color:#1d4ed8;padding:6px 14px;border-radius:20px;font-weight:600;font-size:14px}
+.note{font-size:13px;color:var(--mute);background:#f5f8fd;border-left:4px solid var(--blue);padding:10px 12px;margin-top:12px;border-radius:6px}
+#page-about p{margin-bottom:10px;line-height:1.6}
+.overlay{position:fixed;inset:0;background:#0c1b3399;display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:560px;max-height:92vh;overflow:auto;animation:pop .2s}
+@keyframes pop{from{transform:scale(.95);opacity:0}}
+.x{background:none;border:0;font-size:26px;cursor:pointer;color:var(--mute)}
+.emg-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.emg-list button{padding:16px;border:2px solid var(--line);border-radius:10px;background:#fff;font-size:15px;cursor:pointer;transition:.2s}
+.emg-list button:hover{border-color:var(--red);background:#fff5f5}
+#toasts{position:fixed;top:16px;right:16px;z-index:50;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 18px;border-radius:10px;color:#fff;font-size:14px;box-shadow:0 4px 14px #0004;animation:pop .2s}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}
+@media(max-width:900px){body{flex-direction:column}.sidebar{width:100%;height:auto;position:static}#nav{flex-direction:row;flex-wrap:wrap}main{padding:16px}.grid4,.grid3,.two,.vd,.info-grid{grid-template-columns:1fr 1fr}.grid5{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.grid4,.grid3,.two,.vd,.info-grid,.emg-list{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start;gap:10px}}
+
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+
+<style id="student-project-style">
+/* Simpler student-project styling: keeps all existing functionality intact. */
+:root{
+  --primary:#2563eb;
+  --primary-dark:#1e3a8a;
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#d9dee7;
+}
+body{
+  background:var(--bg) !important;
+  color:var(--text) !important;
+}
+.sidebar{
+  background:#17345f !important;
+  box-shadow:none !important;
+}
+.sidebar .brand{
+  margin-bottom:18px !important;
+}
+.nav-item{
+  border-radius:8px !important;
+  box-shadow:none !important;
+}
+.nav-item.active{
+  background:#2563eb !important;
+}
+main{
+  background:var(--bg) !important;
+}
+.card,.panel,.stat-card,.provider-card,.history-card{
+  border-radius:12px !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.07) !important;
+  border:1px solid #e1e5ea !important;
+}
+.hero{
+  border-radius:12px !important;
+  box-shadow:none !important;
+}
+button,.btn{
+  border-radius:8px !important;
+  box-shadow:none !important;
+}
+input,select,textarea{
+  border-radius:7px !important;
+  border:1px solid #cfd5dd !important;
+}
+h1,h2,h3{
+  letter-spacing:0 !important;
+}
+.toast{
+  border-radius:8px !important;
+}
+@media (min-width:900px){
+  .content,.main-content{
+    max-width:1180px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+}
+</style>
+
+</head>
+<body>
+
+<!-- Sidebar navigation -->
+<aside class="sidebar">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3 6 10v13c0 11 8 19 18 22 10-3 18-11 18-22V10z" fill="#2563eb"/><path d="M13 30v-5l3-7h16l3 7v5h-3v2h-4v-2H20v2h-4v-2zm5-10-2 5h16l-2-5z" fill="#fff"/></svg>
+    <div><b>AutoGuard</b><small>Your Vehicle. Our Assistance. Anytime.</small></div>
+  </div>
+  <nav id="nav">
+    <button data-page="dashboard" class="active">🏠 Dashboard</button>
+    <button data-page="vehicle">🚘 My Vehicle</button>
+    <button data-page="report">📝 Report Problem</button>
+    <button data-page="assist">🛠️ Assistance</button>
+    <button data-page="track">📍 Track Request</button>
+    <button data-page="history">🧾 Service History</button>
+    <button data-page="about">ℹ️ About AutoGuard</button>
+  </nav>
+  <button class="btn ghost" id="resetBtn">Reset demo data</button>
+</aside>
+
+<main>
+  <header class="top">
+    <div><h1>AutoGuard</h1><p>Smart Vehicle Breakdown &amp; Roadside Assistance</p></div>
+    <button class="btn danger" id="emgBtn">🚨 Emergency Assistance</button>
+  </header>
+
+  <!-- 1. Dashboard -->
+  <section class="page active" id="page-dashboard">
+    <div class="grid4">
+      <div class="card" id="vehCard"></div>
+      <div class="card" id="actCard"></div>
+      <div class="card" id="asCard"></div>
+      <div class="card emg-card">
+        <h3>Emergency Assistance</h3>
+        <p class="mute">Stuck on the road? Pick the help you need right away.</p>
+        <button class="btn danger" id="emgBtn2">🚨 Emergency Assistance</button>
+      </div>
+    </div>
+    <div class="grid4 stats" id="stats"></div>
+    <div class="card">
+      <div class="row"><h2>Available Assistance Providers</h2><button class="btn" data-go="report">Report a Problem</button></div>
+      <div class="grid4" id="providers"></div>
+    </div>
+  </section>
+
+  <!-- 2. My Vehicle -->
+  <section class="page" id="page-vehicle">
+    <div class="card">
+      <div class="row"><h2>My Vehicle</h2><button class="btn" id="addVehBtn">+ Add Vehicle</button></div>
+      <div id="vehDetails"></div>
+    </div>
+  </section>
+
+  <!-- 3. Report Problem -->
+  <section class="page" id="page-report">
+    <div class="card">
+      <h2>Report Vehicle Problem</h2>
+      <p class="mute">What problem are you facing?</p>
+      <div class="grid5" id="problems"></div>
+      <div class="two">
+        <label>Location
+          <input id="loc" placeholder="Enter your current location (e.g. CMR Technical Campus, Hyderabad)">
+          <span class="err" id="e-loc"></span></label>
+        <label>Describe the problem
+          <textarea id="desc" rows="3" placeholder="Example: Car will not start, dashboard lights are dim"></textarea></label>
+      </div>
+      <button class="btn big-btn" id="reqBtn">Request Assistance</button>
+    </div>
+  </section>
+
+  <!-- 4. Assistance -->
+  <section class="page" id="page-assist">
+    <h2 class="ptitle">Assistance Options</h2>
+    <div class="grid3" id="options"></div>
+    <div class="card tow">
+      <h2>🚛 Tow Truck Assistance</h2>
+      <p class="mute">Vehicle cannot be driven? Request a nearby towing service.</p>
+      <div class="grid3">
+        <label>Vehicle<input id="t-veh" readonly></label>
+        <label>Pickup Location<input id="t-pick" placeholder="Where is your vehicle?"><span class="err" id="e-pick"></span></label>
+        <label>Destination<input id="t-dest" value="Authorized Service Center"><span class="err" id="e-dest"></span></label>
+      </div>
+      <button class="btn big-btn" id="towBtn">Request Tow Truck</button>
+      <div id="towResult"></div>
+    </div>
+  </section>
+
+  <!-- 5. Track Request -->
+  <section class="page" id="page-track">
+    <div class="card" id="trackBox"></div>
+  </section>
+
+  <!-- 6. Service History -->
+  <section class="page" id="page-history">
+    <div class="card">
+      <h2>Service History</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Request ID</th><th>Date</th><th>Vehicle</th><th>Problem</th><th>Service</th><th>Status</th></tr></thead>
+        <tbody id="histBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="page" id="page-about">
+    <div class="card">
+      <h2>About AutoGuard</h2>
+      <p>AutoGuard is a smart roadside assistance system that connects vehicle users with suitable assistance providers during vehicle breakdowns.</p>
+      <p class="mute">Technology stack of the Java project:</p>
+      <div class="chips"><span>Java</span><span>OOP</span><span>JDBC</span><span>MySQL</span><span>GUI</span></div>
+      <p class="note">This webpage is a frontend demonstration prototype (HTML, CSS, JavaScript). It uses mock data and is not connected to Java or MySQL.</p>
+    </div>
+  </section>
+</main>
+
+<!-- Modal: add vehicle -->
+<div class="overlay" id="m-vehicle"><div class="modal">
+  <div class="row"><h2>Add Vehicle</h2><button class="x" data-close>×</button></div>
+  <div class="two">
+    <label>Owner Name<input id="f-owner"><span class="err"></span></label>
+    <label>Vehicle Number<input id="f-num" placeholder="TS 09 AB 1234"><span class="err"></span></label>
+    <label>Vehicle Model<input id="f-model" placeholder="Hyundai i20"><span class="err"></span></label>
+    <label>Vehicle Type<select id="f-type"><option>Car</option><option>SUV</option><option>Bike</option><option>Truck</option></select></label>
+    <label>Fuel Type<select id="f-fuel"><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Electric</option></select></label>
+    <label>Model Year<input id="f-year" type="number" placeholder="2022"><span class="err"></span></label>
+  </div>
+  <button class="btn big-btn" id="saveVeh">Register Vehicle</button>
+</div></div>
+
+<!-- Modal: emergency -->
+<div class="overlay" id="m-emg"><div class="modal">
+  <div class="row"><h2>🚨 Emergency Assistance</h2><button class="x" data-close>×</button></div>
+  <p class="mute">Select the assistance you need immediately.</p>
+  <div class="emg-list" id="emgList"></div>
+  <p class="note">Demo only. No real emergency service is contacted.</p>
+</div></div>
+
+<div id="toasts"></div>
+<script>
+/* AutoGuard – frontend prototype. All data is mock data stored in localStorage. */
+const $ = id => document.getElementById(id);
+// Escape user text before putting it into HTML
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// The four stages of every request
+const STAGES = [
+  ['Request', 'Your request has been received'],
+  ['Provider Assigned', 'A nearby provider accepted the job'],
+  ['On the Way', 'The provider is travelling to your location'],
+  ['Service Completed', 'The service has been finished']
+];
+
+// Problem type -> assistance service (key is used everywhere)
+const SERVICES = {
+  battery:  {icon:'🔋', problem:'Battery Failure',  name:'Battery Assistance',  range:'10–20 minutes', provider:'AutoCare Roadside Services', desc:'Jump-start or battery replacement where you are.'},
+  tyre:     {icon:'🛞', problem:'Tyre Puncture',    name:'Tyre Service',        range:'15–25 minutes', provider:'TyreFix Mobile Service',     desc:'Puncture repair or spare tyre fitting on the spot.'},
+  fuel:     {icon:'⛽', problem:'Fuel Shortage',    name:'Fuel Delivery',       range:'15–25 minutes', provider:'QuickFuel Assistance',       desc:'Fuel brought to your vehicle so you can reach a pump.'},
+  mechanic: {icon:'🔧', problem:'Mechanical Issue', name:'Mechanic Assistance', range:'15–30 minutes', provider:'AutoCare Roadside Services', desc:'A mechanic inspects and fixes minor faults on site.'},
+  tow:      {icon:'🚗', problem:'Major Breakdown',  name:'Tow Truck',           range:'20–30 minutes', provider:'City Tow Services',          desc:'For vehicles that cannot be driven.'}
+};
+
+// Mock providers (5 available)
+const PROVIDERS = [
+  {name:'AutoCare Roadside Services', services:'Mechanic, Battery', eta:15, driver:'Suresh Reddy', phone:'9XXXXXXXXX', veh:'Service Van – TS 09 XX 2210'},
+  {name:'City Tow Services',          services:'Tow Truck',         eta:25, driver:'Ravi Kumar',   phone:'9XXXXXXXXX', veh:'Tow Truck – TG 08 XX 4589'},
+  {name:'QuickFuel Assistance',       services:'Fuel Delivery',     eta:20, driver:'Anil Kumar',   phone:'9XXXXXXXXX', veh:'Fuel Van – TS 07 XX 3178'},
+  {name:'TyreFix Mobile Service',     services:'Tyre Service',      eta:18, driver:'Imran Khan',   phone:'9XXXXXXXXX', veh:'Service Bike – TS 10 XX 6042'},
+  {name:'Highway Rescue Hub',         services:'Mechanic, Battery', eta:22, driver:'Prakash Rao',  phone:'9XXXXXXXXX', veh:'Service Van – TG 09 XX 7715'}
+];
+
+// ---------- Data (state) ----------
+// Starting data used on first load and after "Reset demo data"
+function freshState() {
+  return {
+    vehicle: {name:'Hyundai i20', number:'TS 09 AB 1234', type:'Car', fuel:'Petrol', year:'2022', owner:'Demo User'},
+    problem: null, location: '', desc: '',
+    nextId: 1043,
+    request: {id:'AG-2026-1042', problem:'Battery Failure', service:'Battery Assistance', provider:'AutoCare Roadside Services',
+              driver:'Suresh Reddy', phone:'9XXXXXXXXX', veh:'Service Van – TS 09 XX 2210', eta:'15 minutes',
+              location:'CMR Technical Campus, Hyderabad', note:'', stage:1},
+    history: [
+      {id:'AG-2026-1042', date:'28 Sep 2026', vehicle:'Hyundai i20', problem:'Battery Failure', service:'Battery Assistance', status:'In Progress'},
+      {id:'AG-2026-1031', date:'20 Sep 2026', vehicle:'Hyundai i20', problem:'Tyre Puncture',   service:'Tyre Service',       status:'Completed'},
+      {id:'AG-2026-1018', date:'12 Sep 2026', vehicle:'Hyundai i20', problem:'Major Breakdown', service:'Tow Truck',          status:'Completed'},
+      {id:'AG-2026-1005', date:'05 Sep 2026', vehicle:'Hyundai i20', problem:'Fuel Shortage',   service:'Fuel Delivery',      status:'Completed'}
+    ]
+  };
+}
+let state = load();
+function load() {
+  try { return JSON.parse(localStorage.getItem('autoguard')) || freshState(); } catch (e) { return freshState(); }
+}
+function save() { try { localStorage.setItem('autoguard', JSON.stringify(state)); } catch (e) {} }
+
+// ---------- Small helpers ----------
+// Show a toast message (type = 'ok' or 'err')
+function toast(msg, type = 'ok') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type; t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+// Switch between sections
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+const today = () => new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+const badgeClass = s => s === 'Completed' ? 'ok' : s === 'In Progress' ? 'info' : 'off';
+const isActive = () => state.request && state.request.stage < 3;
+function setHistoryStatus(id, status) {
+  const row = state.history.find(h => h.id === id);
+  if (row) row.status = status;
+}
+// Show an error under a field (empty message clears it)
+function fieldError(input, msg) {
+  const span = input.parentElement.querySelector('.err');
+  if (span) span.textContent = msg;
+  return !msg;
+}
+
+// ---------- Core logic ----------
+// Create a request: generates ID, assigns a provider and adds a history row
+function createRequest(key, location, note) {
+  const s = SERVICES[key];
+  const p = PROVIDERS.find(x => x.name === s.provider);
+  if (isActive()) setHistoryStatus(state.request.id, 'Cancelled');   // one active request at a time
+  const id = 'AG-2026-' + state.nextId++;                              // request ID generation
+  state.request = {id, problem:s.problem, service:s.name, provider:p.name, driver:p.driver, phone:p.phone,
+                   veh:p.veh, eta:p.eta + ' minutes', location, note, stage:1};      // provider assignment
+  state.history.unshift({id, date:today(), vehicle:state.vehicle.name, problem:s.problem, service:s.name, status:'In Progress'});
+  save(); renderAll();
+  return state.request;
+}
+// Choose a service card -> create request -> open tracking
+function requestService(key) {
+  const loc = state.location || 'Location not entered';
+  const note = key === 'tow' ? 'Destination: Authorized Service Center' : state.desc;
+  const r = createRequest(key, loc, note);
+  toast('Request ' + r.id + ' submitted. Provider assigned: ' + r.provider);
+  go('track');
+}
+// Move the request to the next stage (demo button)
+function nextStatus() {
+  const r = state.request;
+  if (!r || r.stage >= 3) return;
+  r.stage++;
+  if (r.stage === 3) { setHistoryStatus(r.id, 'Completed'); toast('Assistance completed successfully.'); }
+  else toast('Status updated: ' + STAGES[r.stage][0]);
+  save(); renderAll();
+}
+
+// ---------- Rendering ----------
+function renderAll() {
+  renderDashboard(); renderVehicle(); renderProblems(); renderOptions(); renderTrack(); renderHistory();
+}
+function renderDashboard() {
+  const v = state.vehicle, r = state.request, active = isActive();
+  $('vehCard').innerHTML = `<h3>Vehicle Status</h3><p class="big">${esc(v.name)}</p><p class="mute">Registration: ${esc(v.number)}</p>
+    <span class="badge ${active ? 'warn' : 'ok'}">${active ? 'Needs assistance' : 'Ready to drive'}</span>`;
+  $('actCard').innerHTML = active
+    ? `<h3>Active Request</h3><p class="big">${esc(r.problem)}</p><p class="mute">${r.id}</p><span class="badge info">${STAGES[r.stage][0]}</span>`
+    : `<h3>Active Request</h3><p class="big">None</p><p class="mute">No request in progress.</p>`;
+  $('asCard').innerHTML = active
+    ? `<h3>Assistance Status</h3><p class="big">${STAGES[r.stage][0]}</p><p class="mute">${esc(r.provider)}<br>ETA: ${r.eta}</p>`
+    : `<h3>Assistance Status</h3><p class="big">All clear</p><p class="mute">Report a problem if you need help.</p>`;
+  const done = state.history.filter(h => h.status === 'Completed').length;
+  $('stats').innerHTML = [['Registered Vehicles', 1], ['Active Requests', active ? 1 : 0], ['Completed Services', done], ['Available Providers', PROVIDERS.length]]
+    .map(s => `<div class="card"><b>${s[1]}</b><span>${s[0]}</span></div>`).join('');
+  $('providers').innerHTML = PROVIDERS.map(p => `<div class="prov"><h3>${p.name}</h3><span class="badge ok">Available</span><br>Services: ${p.services}<br>ETA: ${p.eta} min</div>`).join('');
+}
+function renderVehicle() {
+  const v = state.vehicle;
+  $('vehDetails').innerHTML = `<div class="vd">
+    <div><small>Vehicle Name</small><b>${esc(v.name)}</b></div><div><small>Vehicle Number</small><b>${esc(v.number)}</b></div>
+    <div><small>Vehicle Type</small><b>${esc(v.type)}</b></div><div><small>Fuel Type</small><b>${esc(v.fuel)}</b></div>
+    <div><small>Model Year</small><b>${esc(v.year)}</b></div><div><small>Owner</small><b>${esc(v.owner)}</b></div></div>`;
+}
+function renderProblems() {
+  $('problems').innerHTML = Object.keys(SERVICES).map(k =>
+    `<div class="prob ${state.problem === k ? 'sel' : ''}" data-key="${k}"><span>${SERVICES[k].icon === '🚗' ? '🚗' : SERVICES[k].icon}</span>${SERVICES[k].problem}</div>`).join('');
+}
+function renderOptions() {
+  const k = state.problem, s = SERVICES[k];
+  $('t-veh').value = state.vehicle.name;
+  if (!$('t-pick').value) $('t-pick').value = state.location;
+  $('options').innerHTML = !s
+    ? `<div class="card empty" style="grid-column:1/-1"><span>🛠️</span>No problem selected yet.<br>Report a problem to see the matching assistance.<br><button class="btn" data-go="report">Report Problem</button></div>`
+    : `<div class="card opt"><span class="ico">${s.icon}</span><h2>${s.name}</h2><p>${s.desc}</p><p><b>Estimated response:</b><br>${s.range}</p>
+       <button class="btn" data-svc="${k}">Request ${k === 'tow' ? 'Tow Truck' : 'Service'}</button></div>`;
+}
+function renderTrack() {
+  const r = state.request, box = $('trackBox');
+  if (!r) { box.innerHTML = `<div class="empty"><span>📍</span>No request to track.<br><button class="btn" data-go="report">Report Problem</button></div>`; return; }
+  const steps = STAGES.map((s, i) => `<li class="${i < r.stage || r.stage === 3 ? 'done' : ''} ${i === r.stage ? 'now' : ''}"><span class="dot"></span><div><b>${s[0]}</b><small>${s[1]}</small></div></li>`).join('');
+  box.innerHTML = `<div class="row"><h2>Request ID: ${r.id}</h2><span class="badge ${r.stage === 3 ? 'ok' : 'info'}">${STAGES[r.stage][0]}</span></div>
+    <div class="info-grid"><div><small>Problem</small><b>${esc(r.problem)}</b></div><div><small>Service</small><b>${esc(r.service)}</b></div><div><small>Provider</small><b>${esc(r.provider)}</b></div>
+    <div><small>Driver</small>${esc(r.driver)}</div><div><small>Contact</small>${r.phone}</div><div><small>Service vehicle</small>${esc(r.veh)}</div>
+    <div><small>Location</small>${esc(r.location)}</div><div><small>ETA</small>${r.eta}</div>${r.note ? `<div><small>Note</small>${esc(r.note)}</div>` : ''}</div>
+    <ul class="steps">${steps}</ul>
+    ${r.stage === 3 ? '<div class="result">✅ Assistance completed successfully.</div>' : ''}
+    <button class="btn" id="nextBtn" ${r.stage === 3 ? 'disabled' : ''}>Simulate Next Status</button>
+    <button class="btn" data-go="history" style="background:#0c1b33">View Service History</button>`;
+}
+function renderHistory() {
+  $('histBody').innerHTML = state.history.length
+    ? state.history.map(h => `<tr><td>${h.id}</td><td>${h.date}</td><td>${esc(h.vehicle)}</td><td>${h.problem}</td><td>${h.service}</td><td><span class="badge ${badgeClass(h.status)}">${h.status}</span></td></tr>`).join('')
+    : `<tr><td colspan="6" class="empty">No service history yet.</td></tr>`;
+}
+
+// ---------- Events ----------
+document.addEventListener('click', e => {
+  const t = e.target;
+  const nav = t.closest('#nav button');   if (nav) return go(nav.dataset.page);
+  const g = t.closest('[data-go]');       if (g) return go(g.dataset.go);
+  const p = t.closest('.prob');           if (p) { state.problem = p.dataset.key; save(); return renderProblems(); }
+  const sv = t.closest('[data-svc]');     if (sv) return requestService(sv.dataset.svc);
+  if (t.closest('#nextBtn')) return nextStatus();
+  if (t.closest('#emgBtn, #emgBtn2')) return $('m-emg').classList.add('show');
+  if (t.closest('#addVehBtn')) return $('m-vehicle').classList.add('show');
+  if (t.closest('[data-close]') || t.classList.contains('overlay')) return document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
+  const em = t.closest('#emgList button');
+  if (em) {   // Emergency: create the request straight away
+    const r = createRequest(em.dataset.key, state.location || 'Current location (not entered)', 'Emergency request');
+    document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
+    toast('Emergency request ' + r.id + ' submitted.'); go('track');
+  }
+});
+
+// Emergency options
+$('emgList').innerHTML = [['tow','🚛 Tow Truck'],['mechanic','🔧 Mechanic'],['battery','🔋 Battery'],['fuel','⛽ Fuel'],['tyre','🛞 Tyre Service']]
+  .map(o => `<button data-key="${o[0]}">${o[1]}</button>`).join('');
+
+// Report problem form
+$('reqBtn').onclick = () => {
+  if (!state.problem) return toast('Please select a problem first.', 'err');
+  if (!fieldError($('loc'), $('loc').value.trim() ? '' : 'Location is required.')) return;
+  state.location = $('loc').value.trim(); state.desc = $('desc').value.trim();
+  $('t-pick').value = state.location; save();
+  toast('Problem reported. Choose an assistance option.'); renderOptions(); go('assist');
+};
+
+// Tow truck request
+$('towBtn').onclick = () => {
+  const pick = $('t-pick'), dest = $('t-dest');
+  const a = fieldError(pick, pick.value.trim() ? '' : 'Pickup location is required.');
+  const b = fieldError(dest, dest.value.trim() ? '' : 'Destination is required.');
+  if (!a || !b) return toast('Please fill in the required fields.', 'err');
+  const r = createRequest('tow', pick.value.trim(), 'Destination: ' + dest.value.trim());
+  $('towResult').innerHTML = `<div class="result"><b>Tow truck request submitted successfully.</b><br>Provider: ${r.provider}<br>Driver: ${r.driver}<br>Contact: ${r.phone}<br>Vehicle: ${r.veh}<br>ETA: ${r.eta}<br>
+    <button class="btn" data-go="track">Track Request</button></div>`;
+  toast('Tow truck request submitted successfully.');
+};
+
+// Vehicle registration form with validation
+$('saveVeh').onclick = () => {
+  const f = {owner:$('f-owner'), num:$('f-num'), model:$('f-model'), year:$('f-year')};
+  const year = Number(f.year.value);
+  const ok = [
+    fieldError(f.owner, f.owner.value.trim() ? '' : 'Enter the owner name.'),
+    fieldError(f.num, /^[A-Za-z]{2}\s?\d{1,2}\s?[A-Za-z]{1,3}\s?\d{4}$/.test(f.num.value.trim()) ? '' : 'Use a format like TS 09 AB 1234.'),
+    fieldError(f.model, f.model.value.trim() ? '' : 'Enter the vehicle model.'),
+    fieldError(f.year, year >= 1990 && year <= 2026 ? '' : 'Enter a year between 1990 and 2026.')
+  ];
+  if (ok.includes(false)) return toast('Please correct the highlighted fields.', 'err');
+  state.vehicle = {name:f.model.value.trim(), number:f.num.value.trim().toUpperCase(), type:$('f-type').value, fuel:$('f-fuel').value, year:String(year), owner:f.owner.value.trim()};
+  save(); renderAll();
+  $('m-vehicle').classList.remove('show');
+  toast('Vehicle registered successfully!');
+};
+
+// Reset demo data
+$('resetBtn').onclick = () => {
+  
+  state = freshState(); save();
+  $('loc').value = $('desc').value = $('t-pick').value = ''; $('towResult').innerHTML = '';
+  renderAll(); go('dashboard'); toast('Demo data reset.');
+};
+
+$('loc').value = state.location; $('desc').value = state.desc;
+renderAll();
+</script>
+</body>
+</html>
